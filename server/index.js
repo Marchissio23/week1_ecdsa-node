@@ -6,6 +6,7 @@ const port = 3042;
 app.use(cors());
 app.use(express.json());
 
+  // Created more realistic public keys through file "generate.js"
 const balances = {
   "02e91e1d5be0d0492314c579120696b92285a5a8bbe4e0b668c76944aee0275423": 100,
   "031b1b76d0ffe1f2733361f04527741fcbee5d773e4f0fd5f3eb1707b8b4a5b8be": 50,
@@ -19,6 +20,8 @@ app.get("/balance/:address", (req, res) => {
 });
 
 app.post("/send", (req, res) => {
+    // Added signature to the transfer parameters.
+    // For a transfer to be accepted now users need to also sign it with their private key to verify they are the owners of sender account.
   const { sender, amount, recipient, signature } = req.body;
 
   setInitialBalance(sender);
@@ -28,18 +31,17 @@ app.post("/send", (req, res) => {
   const { utf8ToBytes, hexToBytes } = require("ethereum-cryptography/utils");
   const secp256k1 = require("secp256k1");
 
-  // Combine all items into a single message (as we did locally). MessageHash should be exxactly same as the one made locally.
+    // Combine all items into a single message (as locally done in "signature.js").
+    // MessageHash should be exactly as the one made locally for everything to work.
   const message = amount + sender + recipient;
-
-    // Convert message string into bytes (Uint8Array) and hash it into 32-length
   const messageBytes = utf8ToBytes(message);
   const messageHash = keccak256(messageBytes);
 
-    // Convert signature string into bytes (Uint8Array)
+    // Convert hex string back into bytes (Uint8Array)
   const signatureBytes = hexToBytes(signature);
   const senderBytes = hexToBytes(sender);
 
-    // Verify signature was made with private keys that correspond to sender's public key.
+    // Verify signature was made with private key that corresponds to sender's public key.
   const isVerified = secp256k1.ecdsaVerify(signatureBytes, messageHash, senderBytes);
 
     // If that's the case, we make the transaction go through.
