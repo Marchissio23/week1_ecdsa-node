@@ -4,6 +4,8 @@ import server from "./server";
 function Transfer({ address, setBalance }) {
   const [sendAmount, setSendAmount] = useState("");
   const [recipient, setRecipient] = useState("");
+    // Added signature as a parameter. To transfer you need to also sign the transaction with your private key.
+  const [signature, setSignature] = useState("");
 
   const setValue = (setter) => (evt) => setter(evt.target.value);
 
@@ -17,6 +19,8 @@ function Transfer({ address, setBalance }) {
         sender: address,
         amount: parseInt(sendAmount),
         recipient,
+        // When sending a request to the server we are also appending a signature now.
+        signature
       });
       setBalance(balance);
     } catch (ex) {
@@ -46,9 +50,19 @@ function Transfer({ address, setBalance }) {
         ></input>
       </label>
 
+      <label>
+        Signature
+        <input
+          placeholder="Type signature you signed with private key of transaction"
+          value={signature}
+          onChange={setValue(setSignature)}
+        ></input>
+      </label>
+
       <input type="submit" className="button" value="Transfer" />
     </form>
   );
 }
 
 export default Transfer;
+
